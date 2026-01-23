@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Media Archive | 画像ギャラリー</title>
-    <!-- Tailwind CSS (CDN) を使用してモダンなデザインに -->
+    <!-- Tailwind CSS (CDN) を使用 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
@@ -30,15 +30,14 @@
     <!-- Main Content -->
     <main class="max-w-6xl mx-auto px-4 py-12">
         
-        <!-- Filter / Category Tabs (Optional) -->
+        <!-- Category Tabs -->
         <div class="mb-8 flex flex-wrap gap-2" id="category-tabs">
-            <button onclick="filterGallery('all')" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium">すべて</button>
-            <!-- カテゴリボタンはJavaScriptで自動生成 -->
+            <!-- JavaScriptで自動生成されます -->
         </div>
 
         <!-- Gallery Grid -->
         <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <!-- JavaScriptで画像カードがここに挿入されます -->
+            <!-- JavaScriptで画像カードが挿入されます -->
         </div>
 
         <!-- Empty State -->
@@ -54,14 +53,17 @@
 
     <script>
         /**
-         * ここに画像データを追加していきます
-         * path: images フォルダからの相対パス
-         * category: 分類（タブで絞り込みが可能になります）
-         * title: 画像のタイトル
+         * 重要：pathは必ず「images/ファイル名」の形式で書いてください。
+         * G:\ などの自分のパソコン内の住所は使えません。
          */
         const imageData = [
-            { path: '"G:\マイドライブ\技能照査_画像ファイル\image1.png"', category: '技能照査用', title: '問題2' },
-            // ↓ここに新しい画像を追加してください
+            { 
+                path: 'images/image1.png', 
+                category: '技能照査用', 
+                title: '問題2' 
+            },
+            // 新しく画像を追加する場合は、以下のようにカンマで区切って追加します
+            // { path: 'images/sample2.jpg', category: 'メモ', title: '新しい画像' }
         ];
 
         const galleryEl = document.getElementById('gallery');
@@ -69,7 +71,7 @@
         const counterEl = document.getElementById('counter');
         const tabsEl = document.getElementById('category-tabs');
 
-        // ギャラリーの描画
+        // ギャラリーの描画関数
         function renderGallery(filter = 'all') {
             galleryEl.innerHTML = '';
             const filteredData = filter === 'all' 
@@ -84,7 +86,7 @@
                     const card = document.createElement('div');
                     card.className = 'image-card bg-white rounded-xl shadow-sm border overflow-hidden transition-all duration-300 hover:shadow-md';
                     card.innerHTML = `
-                        <div class="aspect-video overflow-hidden bg-slate-200">
+                        <div class="aspect-video overflow-hidden bg-slate-200 flex items-center justify-center">
                             <img src="${img.path}" alt="${img.title}" 
                                  class="w-full h-full object-cover transition-transform duration-500"
                                  onerror="this.src='https://placehold.jp/24/cccccc/ffffff/400x225.png?text=Not%20Found'">
@@ -103,41 +105,39 @@
             counterEl.innerText = `${filteredData.length} Items`;
         }
 
-        // カテゴリタブの生成
+        // タブ生成関数
         function setupTabs() {
             const categories = ['all', ...new Set(imageData.map(img => img.category))];
-            if (categories.length <= 1) return; // カテゴリが1つ以下の時は生成しない
-
+            
             tabsEl.innerHTML = '';
             categories.forEach(cat => {
                 const btn = document.createElement('button');
                 btn.innerText = cat === 'all' ? 'すべて' : cat;
-                btn.className = 'px-4 py-2 rounded-lg bg-white border text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors';
+                
+                // 初期のボタンスタイル
+                const isActive = cat === 'all';
+                btn.className = isActive 
+                    ? 'px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium transition-colors'
+                    : 'px-4 py-2 rounded-lg bg-white border text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors';
+                
                 btn.onclick = (e) => {
-                    // アクティブスタイルの切り替え
+                    // 全ボタンのスタイルをリセット
                     document.querySelectorAll('#category-tabs button').forEach(b => {
-                        b.classList.remove('bg-blue-600', 'text-white');
-                        b.classList.add('bg-white', 'text-slate-600');
+                        b.className = 'px-4 py-2 rounded-lg bg-white border text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors';
                     });
-                    e.target.classList.remove('bg-white', 'text-slate-600');
-                    e.target.classList.add('bg-blue-600', 'text-white');
+                    // クリックされたボタンをアクティブにする
+                    e.target.className = 'px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium transition-colors';
                     renderGallery(cat);
                 };
                 tabsEl.appendChild(btn);
             });
-            // 初期状態の「すべて」をアクティブに
-            tabsEl.firstChild.classList.remove('bg-white', 'text-slate-600');
-            tabsEl.firstChild.classList.add('bg-blue-600', 'text-white');
         }
 
-        // 初期化
+        // ページ読み込み時に実行
         window.onload = () => {
             renderGallery();
             setupTabs();
         };
     </script>
 </body>
-
 </html>
-
-
