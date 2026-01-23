@@ -60,8 +60,7 @@
          * title: 画像のタイトル
          */
         const imageData = [
-            { path: 'images/sample/photo1.jpg', category: '学習資料', title: '回路図サンプル1' },
-            { path: 'images/sample/photo2.jpg', category: 'メモ', title: 'アイデアスケッチ' },
+            { path: '"G:\マイドライブ\技能照査_画像ファイル\image1.png"', category: '技能照査用', title: '問題2' },
             // ↓ここに新しい画像を追加してください
         ];
 
@@ -81,7 +80,6 @@
                 emptyStateEl.classList.remove('hidden');
             } else {
                 emptyStateEl.classList.add('hidden');
-                { path: '"G:\マイドライブ\技能照査_画像ファイル\image1.png"', category: '技能照査用', title: '問題2' },
                 filteredData.forEach(img => {
                     const card = document.createElement('div');
                     card.className = 'image-card bg-white rounded-xl shadow-sm border overflow-hidden transition-all duration-300 hover:shadow-md';
@@ -141,4 +139,5 @@
 </body>
 
 </html>
+
 
