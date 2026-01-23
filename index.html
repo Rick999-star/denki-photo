@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Archive | 画像ギャラリー</title>
+    <!-- Tailwind CSS (CDN) を使用してモダンなデザインに -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .image-card:hover img { transform: scale(1.05); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white border-b sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-blue-600 tracking-tight">Media Gallery</h1>
+                <p class="text-sm text-slate-500">保管済みファイルの一覧</p>
+            </div>
+            <div id="counter" class="text-xs font-semibold bg-slate-100 px-3 py-1 rounded-full text-slate-600">
+                0 Items
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-12">
+        
+        <!-- Filter / Category Tabs (Optional) -->
+        <div class="mb-8 flex flex-wrap gap-2" id="category-tabs">
+            <button onclick="filterGallery('all')" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium">すべて</button>
+            <!-- カテゴリボタンはJavaScriptで自動生成 -->
+        </div>
+
+        <!-- Gallery Grid -->
+        <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- JavaScriptで画像カードがここに挿入されます -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden text-center py-20">
+            <p class="text-slate-400">表示できる画像が見つかりませんでした。</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t mt-12 py-8 bg-white text-center text-slate-400 text-sm">
+        <p>&copy; 2026 Archive System. Hosted on GitHub Pages.</p>
+    </footer>
+
+    <script>
+        /**
+         * ここに画像データを追加していきます
+         * path: images フォルダからの相対パス
+         * category: 分類（タブで絞り込みが可能になります）
+         * title: 画像のタイトル
+         */
+        const imageData = [
+            { path: 'images/sample/photo1.jpg', category: '学習資料', title: '回路図サンプル1' },
+            { path: 'images/sample/photo2.jpg', category: 'メモ', title: 'アイデアスケッチ' },
+            // ↓ここに新しい画像を追加してください
+        ];
+
+        const galleryEl = document.getElementById('gallery');
+        const emptyStateEl = document.getElementById('empty-state');
+        const counterEl = document.getElementById('counter');
+        const tabsEl = document.getElementById('category-tabs');
+
+        // ギャラリーの描画
+        function renderGallery(filter = 'all') {
+            galleryEl.innerHTML = '';
+            const filteredData = filter === 'all' 
+                ? imageData 
+                : imageData.filter(img => img.category === filter);
+
+            if (filteredData.length === 0) {
+                emptyStateEl.classList.remove('hidden');
+            } else {
+                emptyStateEl.classList.add('hidden');
+                filteredData.forEach(img => {
+                    const card = document.createElement('div');
+                    card.className = 'image-card bg-white rounded-xl shadow-sm border overflow-hidden transition-all duration-300 hover:shadow-md';
+                    card.innerHTML = `
+                        <div class="aspect-video overflow-hidden bg-slate-200">
+                            <img src="${img.path}" alt="${img.title}" 
+                                 class="w-full h-full object-cover transition-transform duration-500"
+                                 onerror="this.src='https://placehold.jp/24/cccccc/ffffff/400x225.png?text=Not%20Found'">
+                        </div>
+                        <div class="p-4">
+                            <span class="text-[10px] uppercase tracking-wider font-bold text-blue-500 mb-1 block">${img.category}</span>
+                            <h3 class="text-sm font-semibold text-slate-800 truncate">${img.title}</h3>
+                            <div class="mt-3 flex justify-between items-center">
+                                <a href="${img.path}" target="_blank" class="text-xs text-slate-400 hover:text-blue-600 transition-colors">フルサイズを表示 ↗</a>
+                            </div>
+                        </div>
+                    `;
+                    galleryEl.appendChild(card);
+                });
+            }
+            counterEl.innerText = `${filteredData.length} Items`;
+        }
+
+        // カテゴリタブの生成
+        function setupTabs() {
+            const categories = ['all', ...new Set(imageData.map(img => img.category))];
+            if (categories.length <= 1) return; // カテゴリが1つ以下の時は生成しない
+
+            tabsEl.innerHTML = '';
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.innerText = cat === 'all' ? 'すべて' : cat;
+                btn.className = 'px-4 py-2 rounded-lg bg-white border text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors';
+                btn.onclick = (e) => {
+                    // アクティブスタイルの切り替え
+                    document.querySelectorAll('#category-tabs button').forEach(b => {
+                        b.classList.remove('bg-blue-600', 'text-white');
+                        b.classList.add('bg-white', 'text-slate-600');
+                    });
+                    e.target.classList.remove('bg-white', 'text-slate-600');
+                    e.target.classList.add('bg-blue-600', 'text-white');
+                    renderGallery(cat);
+                };
+                tabsEl.appendChild(btn);
+            });
+            // 初期状態の「すべて」をアクティブに
+            tabsEl.firstChild.classList.remove('bg-white', 'text-slate-600');
+            tabsEl.firstChild.classList.add('bg-blue-600', 'text-white');
+        }
+
+        // 初期化
+        window.onload = () => {
+            renderGallery();
+            setupTabs();
+        };
+    </script>
+</body>
+</html>
