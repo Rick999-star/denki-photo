@@ -4,174 +4,197 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Media Archive | 画像ギャラリー</title>
-    <!-- Tailwind CSS (CDN) を使用 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .image-card:hover img { transform: scale(1.05); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Sans+JP:wght@400;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', 'Noto Sans JP', sans-serif; 
+        }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .image-card img {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .image-card:hover img {
+            transform: scale(1.1);
+        }
+
+        /* アニメーション */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        #modal.active {
+            display: flex;
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen">
+<body class="bg-slate-50 text-slate-900 min-h-screen pb-20">
 
     <!-- Header -->
-    <header class="bg-white border-b sticky top-0 z-10">
-        <div class="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
+    <header class="glass-header border-b sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-bold text-blue-600 tracking-tight">Media Gallery</h1>
-                <p class="text-sm text-slate-500">保管済みファイルの一覧</p>
+                <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Media Gallery</h1>
+                <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest leading-none mt-1">Digital Archive System</p>
             </div>
-            <div id="counter" class="text-xs font-semibold bg-slate-100 px-3 py-1 rounded-full text-slate-600">
-                0 Items
+            <div class="flex items-center gap-3">
+                <div id="counter" class="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full border border-blue-100">
+                    0 Items
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-4 py-12">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         
         <!-- Category Tabs -->
-        <div class="mb-8 flex flex-wrap gap-2" id="category-tabs">
-            <!-- JavaScriptで自動生成されます -->
+        <div class="mb-10 overflow-x-auto pb-2">
+            <div class="flex flex-nowrap sm:flex-wrap gap-2" id="category-tabs">
+                <!-- JSで生成 -->
+            </div>
         </div>
 
         <!-- Gallery Grid -->
-        <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <!-- JavaScriptで画像カードが挿入されます -->
+        <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <!-- JSで挿入 -->
         </div>
 
         <!-- Empty State -->
-        <div id="empty-state" class="hidden text-center py-20">
-            <p class="text-slate-400">表示できる画像が見つかりませんでした。</p>
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-32 text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <p class="text-slate-500 font-medium">表示できる画像が見つかりませんでした。</p>
         </div>
     </main>
 
+    <!-- Modal (拡大表示用) -->
+    <div id="modal" class="fixed inset-0 bg-slate-900/90 z-50 hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300" onclick="closeModal()">
+        <button class="absolute top-6 right-6 text-white hover:text-blue-400 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <div class="max-w-5xl max-h-full flex flex-col items-center" onclick="event.stopPropagation()">
+            <img id="modal-img" src="" alt="" class="max-w-full max-h-[80vh] rounded-lg shadow-2xl border border-white/10">
+            <div class="mt-6 text-center">
+                <h3 id="modal-title" class="text-white text-xl font-bold"></h3>
+                <p id="modal-info" class="text-slate-400 text-sm mt-2"></p>
+                <div class="mt-4 flex gap-3 justify-center">
+                    <a id="modal-link" href="#" target="_blank" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs rounded-full transition-all flex items-center gap-2">
+                        <span>別タブで元画像を開く</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
-    <footer class="border-t mt-12 py-8 bg-white text-center text-slate-400 text-sm">
-        <p>&copy; 2026 Archive System. Hosted on GitHub Pages.</p>
+    <footer class="mt-20 py-10 border-t border-slate-200 bg-white">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-slate-400 text-sm font-medium">&copy; 2026 Media Archive System</p>
+            <div class="mt-4 inline-flex items-center gap-2 text-[10px] text-slate-300 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                <span>システム稼働中: 画像が見つからない場合は「プレースホルダー」を表示します</span>
+            </div>
+        </div>
     </footer>
 
     <script>
         /**
-         * 重要：pathは必ず「images/ファイル名」の形式で書いてください。
-         * G:\ などの自分のパソコン内の住所は使えません。
+         * imageDataの管理
+         * 実際のファイルがない場合でも、UI確認用にプレースホルダーを表示します。
          */
         const imageData = [
-            { 
-                path: 'images/image1.png', 
-                category: '技能照査用', 
-                title: '問題2' 
-            },
-            { 
-                path: 'images/image2.png', 
-                category: '技能照査用', 
-                title: '問題3' 
-            },
-            { 
-                path: 'images/image3.png', 
-                category: '技能照査用', 
-                title: '問題4' 
-            },
-                        { 
-                path: 'images/image4.png', 
-                category: '技能照査用', 
-                title: '問題5' 
-            },
-                        { 
-                path: 'images/image5.png', 
-                category: '技能照査用', 
-                title: '問題6' 
-            },
-                        { 
-                path: 'images/image6.png', 
-                category: '技能照査用', 
-                title: '問題7' 
-            },
-                        { 
-                path: 'images/image7.png', 
-                category: '技能照査用', 
-                title: '問題8' 
-            },
-                        { 
-                path: 'images/image8.png', 
-                category: '技能照査用', 
-                title: '問題9' 
-            },
-                        { 
-                path: 'images/image9.png', 
-                category: '技能照査用', 
-                title: '問題10' 
-            },
-                        { 
-                path: 'images/image10.png', 
-                category: '技能照査用', 
-                title: '問題13' 
-            },
-                        { 
-                path: 'images/image11.png', 
-                category: '技能照査用', 
-                title: '問題14' 
-            },
-                        { 
-                path: 'images/image12.png', 
-                category: '技能照査用', 
-                title: '問題15' 
-            },
-                        { 
-                path: 'images/image13.png', 
-                category: '技能照査用', 
-                title: '問題17' 
-            },
-                        { 
-                path: 'images/image14.png', 
-                category: '技能照査用', 
-                title: '問題18' 
-            },               
-                        { 
-                path: 'images/image15.png', 
-                category: '技能照査用', 
-                title: '配線図問題11' 
-            },    
-                        { 
-                path: 'images/image16.png', 
-                category: '技能照査用', 
-                title: '配線図問題16' 
-            },    // 新しく画像を追加する
-                        { 
-                 path: 'images/image17.png', 
-                category: '技能照査用', 
-                title: '配線図2問題43' 
-            },  
-                        { 
-                path: 'images/image18.png', 
-                category: '技能照査用', 
-                title: '配線図2問題44' 
-            },  
-                        { 
-                path: 'images/image19.png', 
-                category: '技能照査用', 
-                title: '配線図2問題45' 
-            },             
-                        { 
-                path: 'images/image20.png', 
-                category: '技能照査用', 
-                title: '配線図2問題46' 
-            },  
-                        { 
-                path: 'images/image21.png', 
-                category: '技能照査用', 
-                title: '配線図2問題48' 
-            },                  
-                
-                // { path: 'images/sample2.jpg', category: 'メモ', title: '新しい画像' }
+            { path: 'images/image1.png', category: '技能照査用', title: '問題2' },
+            { path: 'images/image2.png', category: '技能照査用', title: '問題3' },
+            { path: 'images/image3.png', category: '技能照査用', title: '問題4' },
+            { path: 'images/image4.png', category: '技能照査用', title: '問題5' },
+            { path: 'images/image5.png', category: '技能照査用', title: '問題6' },
+            { path: 'images/image6.png', category: '技能照査用', title: '問題7' },
+            { path: 'images/image7.png', category: '技能照査用', title: '問題8' },
+            { path: 'images/image8.png', category: '技能照査用', title: '問題9' },
+            { path: 'images/image9.png', category: '技能照査用', title: '問題10' },
+            { path: 'images/image10.png', category: '技能照査用', title: '問題13' },
+            { path: 'images/image11.png', category: '技能照査用', title: '問題14' },
+            { path: 'images/image12.png', category: '技能照査用', title: '問題15' },
+            { path: 'images/image13.png', category: '技能照査用', title: '問題17' },
+            { path: 'images/image14.png', category: '技能照査用', title: '問題18' },
+            { path: 'images/image15.png', category: '技能照査用', title: '配線図問題11' },
+            { path: 'images/image16.png', category: '技能照査用', title: '配線図問題16' },
+            { path: 'images/image17.png', category: '技能照査用', title: '配線図2問題43' },
+            { path: 'images/image18.png', category: '技能照査用', title: '配線図2問題44' },
+            { path: 'images/image19.png', category: '技能照査用', title: '配線図2問題45' },
+            { path: 'images/image20.png', category: '技能照査用', title: '配線図2問題46' },
+            { path: 'images/image21.png', category: '技能照査用', title: '配線図2問題48' }
         ];
 
         const galleryEl = document.getElementById('gallery');
         const emptyStateEl = document.getElementById('empty-state');
         const counterEl = document.getElementById('counter');
         const tabsEl = document.getElementById('category-tabs');
+        const modal = document.getElementById('modal');
 
-        // ギャラリーの描画関数
+        // エラー時の代替画像生成
+        function getPlaceholderUrl(title) {
+            // 背景色をランダムまたはタイトルに基づいて決定
+            const colors = ['3b82f6', '6366f1', '8b5cf6', 'ec4899', 'f43f5e'];
+            const color = colors[title.length % colors.length];
+            return `https://placehold.jp/24/${color}/ffffff/400x300.png?text=${encodeURIComponent(title)}%0A(No%20Image)`;
+        }
+
+        // 画像エラーハンドラ
+        function handleImageError(el, title) {
+            el.src = getPlaceholderUrl(title);
+            el.onerror = null; // ループ防止
+            el.parentElement.classList.add('is-placeholder');
+        }
+
+        // モーダル操作
+        function openModal(path, title, category) {
+            const modalImg = document.getElementById('modal-img');
+            const modalTitle = document.getElementById('modal-title');
+            const modalInfo = document.getElementById('modal-info');
+            const modalLink = document.getElementById('modal-link');
+            
+            // 現在の画像が壊れているかチェック
+            const currentCardImg = event.currentTarget.querySelector('img');
+            modalImg.src = currentCardImg.src;
+            
+            modalTitle.innerText = title;
+            modalInfo.innerText = `${category} • Path: ${path}`;
+            modalLink.href = path;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // ギャラリーの描画
         function renderGallery(filter = 'all') {
             galleryEl.innerHTML = '';
             const filteredData = filter === 'all' 
@@ -182,21 +205,28 @@
                 emptyStateEl.classList.remove('hidden');
             } else {
                 emptyStateEl.classList.add('hidden');
-                filteredData.forEach(img => {
+                filteredData.forEach((img, index) => {
                     const card = document.createElement('div');
-                    card.className = 'image-card bg-white rounded-xl shadow-sm border overflow-hidden transition-all duration-300 hover:shadow-md';
+                    card.className = 'image-card group bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 fade-in';
+                    card.style.animationDelay = `${index * 0.05}s`;
+                    
                     card.innerHTML = `
-                        <div class="aspect-video overflow-hidden bg-slate-200 flex items-center justify-center">
+                        <div class="aspect-[4/3] overflow-hidden bg-slate-100 relative cursor-zoom-in" onclick="openModal('${img.path}', '${img.title}', '${img.category}')">
                             <img src="${img.path}" alt="${img.title}" 
-                                 class="w-full h-full object-cover transition-transform duration-500"
-                                 onerror="this.src='https://placehold.jp/24/cccccc/ffffff/400x225.png?text=Not%20Found'">
+                                 class="w-full h-full object-cover"
+                                 onerror="handleImageError(this, '${img.title}')">
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                <span class="bg-white/90 p-2 rounded-full shadow-lg scale-90 group-hover:scale-100 transition-transform">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                    </svg>
+                                </span>
+                            </div>
                         </div>
                         <div class="p-4">
-                            <span class="text-[10px] uppercase tracking-wider font-bold text-blue-500 mb-1 block">${img.category}</span>
-                            <h3 class="text-sm font-semibold text-slate-800 truncate">${img.title}</h3>
-                            <div class="mt-3 flex justify-between items-center">
-                                <a href="${img.path}" target="_blank" class="text-xs text-slate-400 hover:text-blue-600 transition-colors">フルサイズを表示 ↗</a>
-                            </div>
+                            <span class="inline-block px-2 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-500 uppercase tracking-wider mb-2 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">${img.category}</span>
+                            <h3 class="text-sm font-bold text-slate-800 truncate mb-1" title="${img.title}">${img.title}</h3>
+                            <p class="text-[10px] text-slate-400 font-mono truncate">${img.path}</p>
                         </div>
                     `;
                     galleryEl.appendChild(card);
@@ -205,45 +235,36 @@
             counterEl.innerText = `${filteredData.length} Items`;
         }
 
-        // タブ生成関数
+        // タブ生成
         function setupTabs() {
             const categories = ['all', ...new Set(imageData.map(img => img.category))];
             
             tabsEl.innerHTML = '';
             categories.forEach(cat => {
                 const btn = document.createElement('button');
-                btn.innerText = cat === 'all' ? 'すべて' : cat;
+                btn.innerText = cat === 'all' ? 'すべて表示' : cat;
                 
-                // 初期のボタンスタイル
                 const isActive = cat === 'all';
                 btn.className = isActive 
-                    ? 'px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium transition-colors'
-                    : 'px-4 py-2 rounded-lg bg-white border text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors';
+                    ? 'px-5 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-lg shadow-blue-200 transition-all whitespace-nowrap'
+                    : 'px-5 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 text-sm font-bold hover:bg-slate-50 hover:border-slate-300 transition-all whitespace-nowrap';
                 
                 btn.onclick = (e) => {
-                    // 全ボタンのスタイルをリセット
                     document.querySelectorAll('#category-tabs button').forEach(b => {
-                        b.className = 'px-4 py-2 rounded-lg bg-white border text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors';
+                        b.className = 'px-5 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 text-sm font-bold hover:bg-slate-50 hover:border-slate-300 transition-all whitespace-nowrap';
                     });
-                    // クリックされたボタンをアクティブにする
-                    e.target.className = 'px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium transition-colors';
+                    btn.className = 'px-5 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-lg shadow-blue-200 transition-all whitespace-nowrap';
                     renderGallery(cat);
                 };
                 tabsEl.appendChild(btn);
             });
         }
 
-        // ページ読み込み時に実行
-        window.onload = () => {
+        window.addEventListener('DOMContentLoaded', () => {
             renderGallery();
             setupTabs();
-        };
+            window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+        });
     </script>
 </body>
 </html>
-
-
-
-
-
-
